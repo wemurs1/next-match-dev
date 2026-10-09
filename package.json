@@ -6,22 +6,52 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "vercel-build": "prisma generate && prisma migrate deploy && prisma db seed && next build"
   },
   "dependencies": {
-    "next": "16.4.0",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "@heroui/react": "^3.0.5",
+    "@heroui/styles": "^3.0.5",
+    "@hookform/resolvers": "^5.2.2",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "better-auth": "^1.6.11",
+    "cloudinary": "^2.10.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.2.1",
+    "dotenv": "^17.4.2",
+    "next": "16.2.6",
+    "next-cloudinary": "^6.17.5",
+    "pg": "^8.21.0",
+    "pusher": "^5.3.4",
+    "pusher-js": "^8.5.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.76.0",
+    "react-icons": "^5.6.0",
+    "resend": "^6.14.0",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@tailwindcss/turbopack": "^4",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.2.6",
+    "prisma": "^7.8.0",
     "tailwindcss": "^4",
+    "tsx": "^4.22.3",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "prisma@7.10.0": true,
+    "unrs-resolver@1.12.2": true,
+    "sharp@0.34.5": true,
+    "@prisma/engines@7.10.0": true,
+    "esbuild@0.28.2": true
   }
 }
