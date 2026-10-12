@@ -1,16 +1,22 @@
 'use client';
 
-import { Button, Card, CardHeader, Input } from '@heroui/react';
-import { SyntheticEvent, useState } from 'react';
+import { Button, Card, CardHeader, FieldError, Input, TextField } from '@heroui/react';
 import { GiPadlock } from 'react-icons/gi';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { LoginSchema, loginSchema } from '@/lib/schemas/loginSchema';
 
 export default function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginSchema>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const handleSubmit = (event: SyntheticEvent) => {
-    event.preventDefault();
-    console.log('Login: ', { email, password });
+  const onSubmit = (data: LoginSchema) => {
+    console.log({ data });
   };
 
   return (
@@ -24,9 +30,15 @@ export default function LoginForm() {
           <p className='text-foreground/60'>Welcome back to NextMatch</p>
         </div>
       </CardHeader>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4 px-6 py-4'>
-        <Input type='email' placeholder='Enter your email' value={email} onChange={(e) => setEmail(e.target.value)} />
-        <Input type='password' placeholder='Enter your password' value={password} onChange={(e) => setPassword(e.target.value)} />
+      <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-4 px-6 py-4'>
+        <TextField defaultValue='' aria-label='email' isInvalid={!!errors.email}>
+          <Input placeholder='Enter your email' {...register('email')} />
+          <FieldError>{errors.email?.message}</FieldError>
+        </TextField>
+        <TextField defaultValue='' aria-label='password' isInvalid={!!errors.password}>
+          <Input type='password' placeholder='Enter your password' {...register('password')} />
+          <FieldError>{errors.password?.message}</FieldError>
+        </TextField>
         <Button type='submit' className='w-full'>
           Sign in
         </Button>
