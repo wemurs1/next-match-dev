@@ -27,6 +27,7 @@ export default function LoginForm() {
       {
         onSuccess: () => {
           router.push('/members');
+          router.refresh();
         },
         onError: (ctx) => {
           toast.danger(ctx.error.message);

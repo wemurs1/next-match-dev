@@ -28,6 +28,7 @@ export default function RegisterForm() {
       {
         onSuccess: () => {
           router.push('/members');
+          router.refresh();
         },
         onError: (ctx) => {
           toast.danger(ctx.error.message);
