@@ -1,4 +1,4 @@
-import { calculateAge } from '@/lib/util';
+import { calculateAge, transformImageUrl } from '@/lib/util';
 import { getMemberByUserId } from '@/server/actions/members';
 import { buttonVariants, Card, Separator } from '@heroui/react';
 import Image from 'next/image';
@@ -34,7 +34,7 @@ export default async function Layout({ children, params }: { children: ReactNode
             loading='eager'
             unoptimized
             sizes='(max-width: 768px) 100vw, 33vw'
-            src={member?.image || '/images/user.png'}
+            src={transformImageUrl(member?.image) || '/images/user.png'}
             className='aspect-square object-cover relative rounded-full p-6'
           />
           <Card.Content>
@@ -59,7 +59,7 @@ export default async function Layout({ children, params }: { children: ReactNode
       <div className='col-span-9'>
         <Card className='w-full mt-6 h-[80vh]'>
           <Card.Header>
-            <SectionTitle sections={sections} />
+            <SectionTitle sections={sections} isOwner={isCurrentUser}/>
           </Card.Header>
           <Separator />
           <Card.Content>{children}</Card.Content>

@@ -6,7 +6,8 @@ import { profileEditSchema, ProfileEditSchema } from '@/lib/schemas/profileEditS
 import { ActionResult } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { cache } from 'react';
-import { Member } from '../../../generated/prisma/client';
+import { Member, Photo } from '../../../generated/prisma/client';
+import { cloudinary } from '@/lib/cloudinary';
 
 export async function getMembers() {
   const currentUser = await getCurrentUser();
@@ -61,4 +62,80 @@ export async function getMemberPhotosByUserId(userId: string) {
   });
 
   return member?.photos;
+}
+
+export async function addImage(url: string, publicId: string) {
+  try {
+    const user = await requireAuthUser();
+
+    const member = await prisma.member.update({
+      where: { userId: user.id },
+      data: {
+        photos: {
+          create: [{ url, publicId }],
+        },
+      },
+    });
+
+    revalidatePath(`/members/${member.userId}/photos`);
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export async function setMainImage(photo: Photo) {
+  try {
+    const user = await requireAuthUser();
+
+    // if (photo.status !== 'approved') {
+    //   throw new Error('Only approved photos can be used as main');
+    // }
+
+    const result = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        image: photo.url,
+        member: {
+          update: {
+            image: photo.url,
+          },
+        },
+      },
+    });
+
+    revalidatePath(`/members/${user.id}/photos`);
+    revalidatePath(`/members`);
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export async function deleteImage(photo: Photo) {
+  try {
+    const user = await requireAuthUser();
+
+    if (photo.publicId) {
+      await cloudinary.v2.uploader.destroy(photo.publicId);
+    }
+
+    const result = await prisma.member.update({
+      where: { userId: user.id },
+      data: {
+        photos: {
+          delete: { id: photo.id },
+        },
+      },
+    });
+
+    revalidatePath(`/members/${user.id}/photos`);
+
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }

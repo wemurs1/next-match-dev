@@ -1,6 +1,7 @@
 'use client';
 
 import { authClient } from '@/lib/auth-client';
+import { transformImageUrl } from '@/lib/util';
 import { Dropdown, Label, Avatar, Separator } from '@heroui/react';
 import { User } from 'better-auth';
 import Link from 'next/link';
@@ -29,7 +30,7 @@ export default function UserMenu({ user }: Props) {
     <Dropdown>
       <Dropdown.Trigger>
         <Avatar>
-          <Avatar.Image alt={user.name} src={user.image || 'images/user.png'} />
+          <Avatar.Image alt={user.name} src={transformImageUrl(user.image) || 'images/user.png'} />
           <Avatar.Fallback>{user.name.charAt(0)}</Avatar.Fallback>
         </Avatar>
       </Dropdown.Trigger>

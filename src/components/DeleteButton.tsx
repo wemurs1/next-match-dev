@@ -3,9 +3,12 @@ import { PiSpinner } from 'react-icons/pi';
 
 type Props = {
   loading: boolean;
+  disabled: boolean;
 };
 
-export default function DeleteButton({ loading }: Props) {
+export default function DeleteButton({ loading, disabled }: Props) {
+  if (disabled) return null;
+
   return (
     <div className='relative opacity-80 transition cursor-pointer'>
       {!loading ? (
