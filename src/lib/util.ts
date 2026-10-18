@@ -1,7 +1,11 @@
-import { differenceInYears } from 'date-fns';
+import { differenceInYears, format } from 'date-fns';
 
 export function calculateAge(dob: string | Date) {
   return differenceInYears(new Date(), new Date(dob));
+}
+
+export function formatShortDateTime(date: Date){
+  return format(date, 'dd MMM yy h:mm:a')
 }
 
 export function transformImageUrl(imageUrl?: string | null) {
