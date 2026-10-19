@@ -62,7 +62,7 @@ export default async function Layout({ children, params }: { children: ReactNode
             <SectionTitle sections={sections} isOwner={isCurrentUser}/>
           </Card.Header>
           <Separator />
-          <Card.Content>{children}</Card.Content>
+          <Card.Content className='overflow-y-auto'>{children}</Card.Content>
         </Card>
       </div>
     </div>
