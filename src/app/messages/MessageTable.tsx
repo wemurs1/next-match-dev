@@ -3,7 +3,7 @@
 import { MessageDto } from '@/lib/types';
 import { transformImageUrl } from '@/lib/util';
 import { deleteMessage } from '@/server/actions/messages';
-import { Avatar, Button, Table } from '@heroui/react';
+import { Avatar, Button, Table, toast } from '@heroui/react';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { AiFillDelete } from 'react-icons/ai';
@@ -21,7 +21,8 @@ export default function MessageTable({ messages, container }: Props) {
 
   const handleDelete = (messageId: string) => {
     startTransition(async () => {
-      await deleteMessage(messageId, isOutbox);
+      const result = await deleteMessage(messageId, isOutbox);
+      if (result.status === 'error') toast.danger(result.error as string);
     });
   };
 
