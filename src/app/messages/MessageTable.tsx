@@ -2,8 +2,10 @@
 
 import { MessageDto } from '@/lib/types';
 import { transformImageUrl } from '@/lib/util';
+import { deleteMessage } from '@/server/actions/messages';
 import { Avatar, Button, Table } from '@heroui/react';
 import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
 import { AiFillDelete } from 'react-icons/ai';
 
 type Props = {
@@ -12,9 +14,16 @@ type Props = {
 };
 
 export default function MessageTable({ messages, container }: Props) {
+  const [isDeleting, startTransition] = useTransition();
   const router = useRouter();
   const isOutbox = container === 'outbox';
   const partyLabel = isOutbox ? 'Recipient' : 'Sender';
+
+  const handleDelete = (messageId: string) => {
+    startTransition(async () => {
+      await deleteMessage(messageId, isOutbox);
+    });
+  };
 
   return (
     <Table>
@@ -53,7 +62,12 @@ export default function MessageTable({ messages, container }: Props) {
                   <Table.Cell>{message.created}</Table.Cell>
                   <Table.Cell>
                     <div onPointerDown={(e) => e.stopPropagation()}>
-                      <Button isIconOnly variant='danger-soft' aria-label='Delete message'>
+                      <Button
+                        isPending={isDeleting}
+                        onClick={() => handleDelete(message.id)}
+                        isIconOnly
+                        variant='danger-soft'
+                        aria-label='Delete message'>
                         <AiFillDelete size={18} />
                       </Button>
                     </div>

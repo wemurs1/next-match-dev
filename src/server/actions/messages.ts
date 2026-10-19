@@ -85,12 +85,13 @@ export async function getMessagesByContainer(container = 'inbox') {
   try {
     const user = await requireAuthUser();
 
-    const selector = container === 'outbox' ? 'senderId' : 'recipientId';
+    const conditions = {
+      [container === 'outbox' ? 'senderId' : 'recipientId']: user.id,
+      ...(container === 'outbox' ? { senderDeleted: false } : { recipientDeleted: false }),
+    };
 
     const messages = await prisma.message.findMany({
-      where: {
-        [selector]: user.id,
-      },
+      where: conditions,
       orderBy: { created: 'desc' },
       select: messageSelect,
     });
@@ -122,3 +123,48 @@ const messageSelect = {
     },
   },
 };
+
+export async function deleteMessage(messageId: string, isOutbox: boolean) {
+  const selector = isOutbox ? 'senderDeleted' : 'recipientDeleted';
+
+  try {
+    const user = await requireAuthUser();
+
+    await prisma.message.update({
+      where: { id: messageId },
+      data: {
+        [selector]: true,
+      },
+    });
+
+    const messagesToDelete = await prisma.message.findMany({
+      where: {
+        OR: [
+          {
+            senderId: user.id,
+            senderDeleted: true,
+            recipientDeleted: true,
+          },
+          {
+            recipientId: user.id,
+            recipientDeleted: true,
+            senderDeleted: true,
+          },
+        ],
+      },
+    });
+
+    if (messagesToDelete.length > 0) {
+      await prisma.message.deleteMany({
+        where: {
+          OR: messagesToDelete.map((m) => ({ id: m.id })),
+        },
+      });
+    }
+
+    revalidatePath(`/members/${user.id}/chat`);
+    revalidatePath('/messages');
+  } catch (error) {
+    console.log(error);
+  }
+}
