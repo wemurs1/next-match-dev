@@ -46,7 +46,7 @@ export default function MessageBox({ message, currentUserId }: Props) {
               'justify-between': isCurrentUserSender,
             })}>
             {message.dateRead && message.recipientId !== currentUserId ? (
-              <span className='text-xs text-black text-italic'>(Read (message.dateRead))</span>
+              <span className='text-xs text-black text-italic'>(Read {message.dateRead})</span>
             ) : (
               <div></div>
             )}

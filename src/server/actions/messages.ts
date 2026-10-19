@@ -61,30 +61,64 @@ export async function getMessageThread(recipientId: string) {
       orderBy: {
         created: 'asc',
       },
-      select: {
-        id: true,
-        text: true,
-        created: true,
-        dateRead: true,
-        sender: {
-          select: {
-            userId: true,
-            name: true,
-            image: true,
-          },
-        },
-        recipient: {
-          select: {
-            userId: true,
-            name: true,
-            image: true,
-          },
-        },
-      },
+      select: messageSelect,
     });
 
-    return messages.map(message=>mapMessageToMessageDto(message));
+    if (messages.length > 0) {
+      await prisma.message.updateMany({
+        where: {
+          senderId: recipientId,
+          recipientId: user.id,
+          dateRead: null,
+        },
+        data: { dateRead: new Date() },
+      });
+    }
+
+    return messages.map((message) => mapMessageToMessageDto(message));
   } catch (error) {
     console.log(error);
   }
 }
+
+export async function getMessagesByContainer(container = 'inbox') {
+  try {
+    const user = await requireAuthUser();
+
+    const selector = container === 'outbox' ? 'senderId' : 'recipientId';
+
+    const messages = await prisma.message.findMany({
+      where: {
+        [selector]: user.id,
+      },
+      orderBy: { created: 'desc' },
+      select: messageSelect,
+    });
+
+    return messages.map((message) => mapMessageToMessageDto(message));
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+const messageSelect = {
+  id: true,
+  text: true,
+  created: true,
+  dateRead: true,
+  sender: {
+    select: {
+      userId: true,
+      name: true,
+      image: true,
+    },
+  },
+  recipient: {
+    select: {
+      userId: true,
+      name: true,
+      image: true,
+    },
+  },
+};
