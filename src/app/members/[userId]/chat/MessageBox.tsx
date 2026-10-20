@@ -1,7 +1,7 @@
 'use client';
 
 import { MessageDto } from '@/lib/types';
-import { transformImageUrl } from '@/lib/util';
+import { formatShortDateTime, timeAgo, transformImageUrl } from '@/lib/util';
 import { Avatar } from '@heroui/react';
 import clsx from 'clsx';
 import { useEffect, useRef } from 'react';
@@ -46,13 +46,13 @@ export default function MessageBox({ message, currentUserId }: Props) {
               'justify-between': isCurrentUserSender,
             })}>
             {message.dateRead && message.recipientId !== currentUserId ? (
-              <span className='text-xs text-black text-italic'>(Read {message.dateRead})</span>
+              <span className='text-xs text-black text-italic'>(Read {timeAgo(message.dateRead)})</span>
             ) : (
               <div></div>
             )}
             <div className='flex'>
               <span className='text-sm font-semibold text-gray-900'>{message.senderName}</span>
-              <span className='text-sm text-gray-500 ml-2'>{message.created}</span>
+              <span className='text-sm text-gray-500 ml-2'>{formatShortDateTime(new Date(message.created))}</span>
             </div>
           </div>
           <p className='text-sm py-3 text-gray-900'>{message.text}</p>

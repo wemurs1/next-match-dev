@@ -29,7 +29,7 @@ export default function ChatForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className='w-full items-center gap-2 flex flex-col'>
-      <InputGroup className='w-full py-2'>
+      <InputGroup variant='secondary' className='w-full py-2 focus-within:ring-0'>
         <InputGroup.Input aria-label='chat input' placeholder='Enter your message' className='w-full' {...register('text')} />
         <InputGroup.Suffix>
           <Button isIconOnly type='submit' isPending={isSubmitting} isDisabled={!isValid} className='rounded-full'>
