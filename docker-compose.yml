@@ -7,5 +7,10 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql
+  soketi:
+    image: quay.io/soketi/soketi:1.4-16-debian
+    ports:
+      - "6001:6001"
+      - "9601:9601"
 volumes:
   pgdata:
