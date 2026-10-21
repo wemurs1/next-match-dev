@@ -1,28 +1,45 @@
 'use client';
 
-import PresenceAvatar from '@/components/PresenceAvatar';
-import { MessageDto } from '@/lib/types';
-import { deleteMessage } from '@/server/actions/messages';
-import { Button, Table, toast } from '@heroui/react';
-import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
 import { AiFillDelete } from 'react-icons/ai';
+import { Button, Table, toast } from '@heroui/react';
+import { deleteMessage } from '@/server/actions/messages';
+import { MessageDto } from '@/lib/types';
+import { useMessageStore } from '@/lib/hooks/useMessageStore';
+import { useEffect, useRef, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { useShallow } from 'zustand/shallow';
+import PresenceAvatar from '@/components/PresenceAvatar';
 
 type Props = {
-  messages: MessageDto[];
+  initialMessages: MessageDto[];
   container: string;
 };
 
-export default function MessageTable({ messages, container }: Props) {
+export default function MessageTable({ initialMessages, container }: Props) {
   const [isDeleting, startTransition] = useTransition();
   const router = useRouter();
   const isOutbox = container === 'outbox';
   const partyLabel = isOutbox ? 'Recipient' : 'Sender';
+  const initMessages = useRef(initialMessages);
+
+  const { set, remove, messages } = useMessageStore(
+    useShallow((state) => ({
+      set: state.set,
+      remove: state.remove,
+      messages: state.messages,
+    })),
+  );
+
+  useEffect(() => {
+    set(initMessages.current);
+    return () => set([]);
+  }, [set, container]);
 
   const handleDelete = (messageId: string) => {
     startTransition(async () => {
       const result = await deleteMessage(messageId, isOutbox);
       if (result.status === 'error') toast.danger(result.error as string);
+      else remove(messageId);
     });
   };
 

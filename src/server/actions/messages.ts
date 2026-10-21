@@ -32,6 +32,8 @@ export async function createMessage(recipientUserId: string, data: ChatSchema): 
 
     await pusherServer.trigger(createChatId(user.id, recipientUserId), 'message:new', messageDto);
 
+    await pusherServer.trigger(`private-${recipientUserId}`, 'message:new', messageDto);
+
     revalidatePath(`/messages/${recipientUserId}/chat`);
 
     return { status: 'success', data: messageDto };
