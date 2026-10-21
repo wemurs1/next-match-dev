@@ -1,9 +1,9 @@
 'use client';
 
+import PresenceAvatar from '@/components/PresenceAvatar';
 import { MessageDto } from '@/lib/types';
-import { transformImageUrl } from '@/lib/util';
 import { deleteMessage } from '@/server/actions/messages';
-import { Avatar, Button, Table, toast } from '@heroui/react';
+import { Button, Table, toast } from '@heroui/react';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { AiFillDelete } from 'react-icons/ai';
@@ -51,9 +51,7 @@ export default function MessageTable({ messages, container }: Props) {
                   className={`${!isRead && !isOutbox ? 'font-semibold' : ''} cursor-pointer`}>
                   <Table.Cell>
                     <div className='flex items-center gap-3'>
-                      <Avatar>
-                        <Avatar.Image alt={name} src={transformImageUrl(image) ?? '/images/user.png'} />
-                      </Avatar>
+                      <PresenceAvatar userId={partyId} src={image} />
                       <span>{name}</span>
                     </div>
                   </Table.Cell>
