@@ -1,5 +1,4 @@
 import { getMessageThread } from '@/server/actions/messages';
-import ChatForm from './ChatForm';
 import { getCurrentUser } from '@/lib/auth';
 import MessageList from './MessageList';
 import { unauthorized } from 'next/navigation';
@@ -16,8 +15,7 @@ export default async function ChatPage(props: PageProps<'/members/[userId]/chat'
 
   return (
     <div className='flex flex-col h-full'>
-      <MessageList initialMessages={messages} currentUserId={currentUser?.id} chatId={chatId} readCount={readCount} />
-      <ChatForm />
+      <MessageList initialMessages={messages} currentUser={currentUser} chatId={chatId} readCount={readCount} />
     </div>
   );
 }

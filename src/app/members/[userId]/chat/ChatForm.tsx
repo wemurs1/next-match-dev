@@ -5,10 +5,15 @@ import { createMessage } from '@/server/actions/messages';
 import { Button, InputGroup, toast } from '@heroui/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams } from 'next/navigation';
+import { ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { HiPaperAirplane } from 'react-icons/hi2';
 
-export default function ChatForm() {
+type Props = {
+  triggerTyping: () => void;
+};
+
+export default function ChatForm({ triggerTyping }: Props) {
   const params = useParams<{ userId: string }>();
   const {
     register,
@@ -27,10 +32,23 @@ export default function ChatForm() {
     }
   };
 
+  const { onChange, ...registerProps } = register('text');
+
+  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    await onChange(e);
+    triggerTyping();
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className='w-full items-center gap-2 flex flex-col'>
       <InputGroup variant='secondary' className='w-full py-2 focus-within:ring-0'>
-        <InputGroup.Input aria-label='chat input' placeholder='Enter your message' className='w-full' {...register('text')} />
+        <InputGroup.Input
+          aria-label='chat input'
+          placeholder='Enter your message'
+          className='w-full'
+          {...registerProps}
+          onChange={handleChange}
+        />
         <InputGroup.Suffix>
           <Button isIconOnly type='submit' isPending={isSubmitting} isDisabled={!isValid} className='rounded-full'>
             <HiPaperAirplane size={18} />

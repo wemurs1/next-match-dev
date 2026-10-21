@@ -35,5 +35,5 @@ export function handlePrismaError<T>(error: unknown): ActionResult<T> {
 }
 
 export function createChatId(a: string, b: string) {
-  return a > b ? `${b}-${a}` : `${a}-${b}`;
+  return a > b ? `private-${b}-${a}` : `private-${a}-${b}`;
 }
