@@ -9,6 +9,7 @@ import { useEffect, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/shallow';
 import PresenceAvatar from '@/components/PresenceAvatar';
+import { formatShortDateTime } from '@/lib/util';
 
 type Props = {
   initialMessages: MessageDto[];
@@ -22,11 +23,12 @@ export default function MessageTable({ initialMessages, container }: Props) {
   const partyLabel = isOutbox ? 'Recipient' : 'Sender';
   const initMessages = useRef(initialMessages);
 
-  const { set, remove, messages } = useMessageStore(
+  const { set, remove, messages, updateUnreadCount } = useMessageStore(
     useShallow((state) => ({
       set: state.set,
       remove: state.remove,
       messages: state.messages,
+      updateUnreadCount: state.updateUnreadCount,
     })),
   );
 
@@ -35,11 +37,14 @@ export default function MessageTable({ initialMessages, container }: Props) {
     return () => set([]);
   }, [set, container]);
 
-  const handleDelete = (messageId: string) => {
+  const handleDelete = (message: MessageDto) => {
     startTransition(async () => {
-      const result = await deleteMessage(messageId, isOutbox);
+      const result = await deleteMessage(message.id, isOutbox);
       if (result.status === 'error') toast.danger(result.error as string);
-      else remove(messageId);
+      else {
+        remove(message.id);
+        if (!message.dateRead && !isOutbox) updateUnreadCount(-1);
+      }
     });
   };
 
@@ -75,12 +80,12 @@ export default function MessageTable({ initialMessages, container }: Props) {
                   <Table.Cell>
                     <span className='line-clamp-1'>{message.text}</span>
                   </Table.Cell>
-                  <Table.Cell>{message.created}</Table.Cell>
+                  <Table.Cell>{formatShortDateTime(new Date(message.created))}</Table.Cell>
                   <Table.Cell>
                     <div onPointerDown={(e) => e.stopPropagation()}>
                       <Button
                         isPending={isDeleting}
-                        onClick={() => handleDelete(message.id)}
+                        onClick={() => handleDelete(message)}
                         isIconOnly
                         variant='danger-soft'
                         aria-label='Delete message'>

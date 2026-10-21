@@ -5,18 +5,21 @@ import { MessageDto } from '@/lib/types';
 import { Channel } from 'pusher-js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import MessageBox from './MessageBox';
-import { formatShortDateTime } from '@/lib/util';
 import { markMessagesAsRead } from '@/server/actions/messages';
+import { useMessageStore } from '@/lib/hooks/useMessageStore';
 
 type Props = {
   initialMessages: MessageDto[];
   currentUserId: string;
   chatId: string;
+  readCount: number;
 };
 
-export default function MessageList({ initialMessages, currentUserId, chatId }: Props) {
+export default function MessageList({ initialMessages, currentUserId, chatId, readCount }: Props) {
   const [messages, setMessages] = useState(initialMessages);
   const channelRef = useRef<Channel | null>(null);
+  const updateUnreadCount = useMessageStore((state) => state.updateUnreadCount);
+  const countUpdated = useRef(false);
 
   const handleNewMessage = useCallback(
     async (message: MessageDto) => {
@@ -38,6 +41,13 @@ export default function MessageList({ initialMessages, currentUserId, chatId }: 
       ),
     );
   }, []);
+
+  useEffect(() => {
+    if (!countUpdated.current) {
+      updateUnreadCount(-readCount);
+      countUpdated.current = true;
+    }
+  }, [readCount, updateUnreadCount]);
 
   useEffect(() => {
     if (!channelRef.current) {

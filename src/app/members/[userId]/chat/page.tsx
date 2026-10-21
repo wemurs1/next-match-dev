@@ -7,7 +7,7 @@ import { createChatId } from '@/lib/util';
 
 export default async function ChatPage(props: PageProps<'/members/[userId]/chat'>) {
   const { userId } = await props.params;
-  const messages = await getMessageThread(userId);
+  const {messages, readCount} = await getMessageThread(userId);
   const currentUser = await getCurrentUser();
 
   if (!currentUser) return unauthorized();
@@ -16,7 +16,7 @@ export default async function ChatPage(props: PageProps<'/members/[userId]/chat'
 
   return (
     <div className='flex flex-col h-full'>
-      <MessageList initialMessages={messages} currentUserId={currentUser?.id} chatId={chatId} />
+      <MessageList initialMessages={messages} currentUserId={currentUser?.id} chatId={chatId} readCount={readCount} />
       <ChatForm />
     </div>
   );
