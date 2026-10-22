@@ -1,6 +1,6 @@
 'use server';
 
-import { getCurrentUser, requireAuthUser } from '@/lib/auth';
+import { requireAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { profileEditSchema, ProfileEditSchema } from '@/lib/schemas/profileEditSchema';
 import { ActionResult, UserFilters } from '@/lib/types';
@@ -17,13 +17,16 @@ export async function getMembers(params: UserFilters) {
   const currentDate = new Date();
   const minDob = addYears(currentDate, -ageRange[1] - 1);
   const maxDob = addYears(currentDate, -ageRange[0]);
+  const orderBySelector = params?.orderBy || 'updated';
+  const selectedGender = params.gender?.toString()?.split(',') || ['male', 'female'];
 
   try {
     return prisma.member.findMany({
       where: {
-        AND: [{ dateOfBirth: { gte: minDob, lte: maxDob } }],
+        AND: [{ dateOfBirth: { gte: minDob, lte: maxDob } }, { gender: { in: selectedGender } }],
         NOT: { userId: currentUser.id },
       },
+      orderBy: { [orderBySelector]: 'desc' },
     });
   } catch (error) {
     console.log(error);
@@ -146,4 +149,17 @@ export async function deleteImage(photo: Photo) {
     console.log(error);
     throw error;
   }
+}
+
+export async function updateLastActive() {
+  const user = await requireAuthUser();
+
+  prisma.member
+    .update({
+      where: { userId: user.id },
+      data: { updated: new Date() },
+    })
+    .catch((e) => {
+      console.log(e);
+    });
 }

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { usePresenceStore } from './usePresenceStore';
 import { getPusherClient } from '../pusher-client';
 import { Members, PresenceChannel } from 'pusher-js';
+import { updateLastActive } from '@/server/actions/members';
 
 type PresenceMember = { id: string; info: unknown };
 
@@ -25,8 +26,9 @@ export const usePresence = (userId: string | null) => {
 
     const channel = getPusherClient().subscribe('presence-nm') as PresenceChannel;
 
-    channel.bind('pusher:subscription_succeeded', (members: Members) => {
+    channel.bind('pusher:subscription_succeeded', (members: Members) => { 
       handleSetMembers(Object.keys(members.members));
+      updateLastActive();
     });
 
     channel.bind('pusher:member_added', (member: PresenceMember) => {

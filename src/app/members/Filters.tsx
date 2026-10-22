@@ -1,15 +1,32 @@
 'use client';
 
+import { useFilterParams } from '@/lib/hooks/useFilterParams';
+import { UserFilters } from '@/lib/types';
 import { Button, Label, ListBox, Select, Slider, Spinner } from '@heroui/react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useTransition } from 'react';
+import { useEffect } from 'react';
 import { FaFemale, FaMale } from 'react-icons/fa';
 
+const defaultFilters: UserFilters = {
+  ageRange: [18, 100],
+  gender: ['male', 'female'],
+  orderBy: 'updated',
+};
+
 export default function Filters() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const { searchParams, commit, isPending, restore } = useFilterParams();
+
+  useEffect(() => {
+    if (!searchParams.toString()) restore();
+  }, [restore, searchParams]);
+
+  const ageRangeParams = searchParams.get('ageRange');
+  const genderParam = searchParams.get('gender');
+
+  const filters: UserFilters = {
+    ageRange: ageRangeParams ? ageRangeParams.split(',').map(Number) : defaultFilters.ageRange,
+    gender: genderParam !== null ? (genderParam ? genderParam.split(',') : []) : defaultFilters.gender,
+    orderBy: searchParams.get('orderBy') ?? defaultFilters.orderBy,
+  };
 
   const orderByList = [
     { label: 'Order by: Last active', value: 'updated' },
@@ -22,11 +39,16 @@ export default function Filters() {
   ];
 
   const handleAgeSelect = (value: number[]) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('ageRange', value.join(','));
-    startTransition(() => {
-      router.replace(`${pathname}?${params}`);
-    });
+    commit({ ageRange: value.join(',') });
+  };
+
+  const handleOrderBy = (value: string) => {
+    commit({ orderBy: value });
+  };
+
+  const handleGenderToggle = (value: string) => {
+    const next = filters.gender.includes(value) ? filters.gender.filter((g) => g !== value) : [...filters.gender, value];
+    commit({ gender: next.join(',') });
   };
 
   return (
@@ -39,15 +61,20 @@ export default function Filters() {
         <div className='flex gap-2 items-center'>
           <div>Gender:</div>
           {genderList.map(({ icon: Icon, value }) => (
-            <Button key={value} size='sm'>
+            <Button
+              key={value}
+              size='sm'
+              onClick={() => handleGenderToggle(value)}
+              variant={filters.gender.includes(value) ? 'primary' : 'secondary'}>
               <Icon size={24} />
             </Button>
           ))}
         </div>
         <div className='flex flex-col gap-2 w-1/4'>
           <Slider
+            key={filters.ageRange.join('-')}
             className='w-full'
-            defaultValue={[18, 100]}
+            defaultValue={filters.ageRange}
             maxValue={100}
             minValue={18}
             step={1}
@@ -67,7 +94,12 @@ export default function Filters() {
           </Slider>
         </div>
         <div className='w-1/4'>
-          <Select defaultValue='updated' placeholder='Select order' aria-label='order by'>
+          <Select
+            defaultValue={filters.orderBy}
+            placeholder='Select order'
+            aria-label='order by'
+            key={filters.orderBy}
+            onChange={(key) => handleOrderBy(key as string)}>
             <Select.Trigger className='w-full'>
               <Select.Value />
             </Select.Trigger>
