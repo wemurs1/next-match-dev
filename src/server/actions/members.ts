@@ -3,19 +3,27 @@
 import { getCurrentUser, requireAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { profileEditSchema, ProfileEditSchema } from '@/lib/schemas/profileEditSchema';
-import { ActionResult } from '@/lib/types';
+import { ActionResult, UserFilters } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { cache } from 'react';
 import { Member, Photo } from '../../../generated/prisma/client';
 import { cloudinary } from '@/lib/cloudinary';
+import { addYears } from 'date-fns';
 
-export async function getMembers() {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) return null;
+export async function getMembers(params: UserFilters) {
+  const currentUser = await requireAuthUser();
+
+  const ageRange = params.ageRange?.toString()?.split(',') || [18, 100];
+  const currentDate = new Date();
+  const minDob = addYears(currentDate, -ageRange[1] - 1);
+  const maxDob = addYears(currentDate, -ageRange[0]);
 
   try {
     return prisma.member.findMany({
-      where: { NOT: { userId: currentUser.id } },
+      where: {
+        AND: [{ dateOfBirth: { gte: minDob, lte: maxDob } }],
+        NOT: { userId: currentUser.id },
+      },
     });
   } catch (error) {
     console.log(error);

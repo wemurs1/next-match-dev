@@ -3,6 +3,12 @@ import { Prisma } from '../../../generated/prisma/client';
 
 type ActionResult<T> = { status: 'success'; data: T } | { status: 'error'; error: string | $ZodIssue[] };
 
+type UserFilters = {
+  ageRange: number[];
+  orderBy: string;
+  gender: string[];
+};
+
 type MessageDto = {
   id: string;
   text: string;
