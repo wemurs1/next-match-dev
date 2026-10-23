@@ -7,6 +7,7 @@ type UserFilters = {
   ageRange: number[];
   orderBy: string;
   gender: string[];
+  withPhoto: boolean;
 } & PagingParams;
 
 type PagingParams = {

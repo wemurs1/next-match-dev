@@ -21,9 +21,14 @@ export async function getMembers(params: UserFilters): Promise<PaginatedResponse
   const selectedGender = params?.gender?.toString()?.split(',') || ['male', 'female'];
   const pageNumber = Number(params?.page) || 1;
   const pageSize = Number(params?.pageSize) || 12;
+  const withPhoto = String(params.withPhoto) === 'true';
 
   const where = {
-    AND: [{ dateOfBirth: { gte: minDob, lte: maxDob } }, { gender: { in: selectedGender } }],
+    AND: [
+      { dateOfBirth: { gte: minDob, lte: maxDob } },
+      { gender: { in: selectedGender } },
+      ...(withPhoto === true ? [] : [{ image: { not: null } }]),
+    ],
     NOT: { userId: currentUser.id },
   };
 
@@ -37,6 +42,7 @@ export async function getMembers(params: UserFilters): Promise<PaginatedResponse
       }),
       prisma.member.count({ where }),
     ]);
+    console.log(items);
     return { items, totalCount };
   } catch (error) {
     console.log(error);

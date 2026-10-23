@@ -2,7 +2,7 @@
 
 import { useFilterParams } from '@/lib/hooks/useFilterParams';
 import { UserFilters } from '@/lib/types';
-import { Button, Label, ListBox, Select, Slider, Spinner } from '@heroui/react';
+import { Button, Label, ListBox, Select, Slider, Spinner, Switch } from '@heroui/react';
 import { useEffect } from 'react';
 import { FaFemale, FaMale } from 'react-icons/fa';
 
@@ -10,6 +10,7 @@ const defaultFilters: UserFilters = {
   ageRange: [18, 100],
   gender: ['male', 'female'],
   orderBy: 'updated',
+  withPhoto: true,
 };
 
 type Props = {
@@ -25,11 +26,13 @@ export default function Filters({ totalCount }: Props) {
 
   const ageRangeParams = searchParams.get('ageRange');
   const genderParam = searchParams.get('gender');
+  const withPhoto = searchParams.get('withPhoto');
 
   const filters: UserFilters = {
     ageRange: ageRangeParams ? ageRangeParams.split(',').map(Number) : defaultFilters.ageRange,
     gender: genderParam !== null ? (genderParam ? genderParam.split(',') : []) : defaultFilters.gender,
     orderBy: searchParams.get('orderBy') ?? defaultFilters.orderBy,
+    withPhoto: Boolean(withPhoto),
   };
 
   const orderByList = [
@@ -53,6 +56,10 @@ export default function Filters({ totalCount }: Props) {
   const handleGenderToggle = (value: string) => {
     const next = filters.gender.includes(value) ? filters.gender.filter((g) => g !== value) : [...filters.gender, value];
     commit({ gender: next.join(','), page: null });
+  };
+
+  const handleWithPhoto = (selected: boolean) => {
+    commit({ withPhoto: String(selected), page: null });
   };
 
   return (
@@ -97,6 +104,12 @@ export default function Filters({ totalCount }: Props) {
             </Slider.Track>
           </Slider>
         </div>
+        <Switch defaultSelected onChange={(selected) => handleWithPhoto(selected)}>
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+          <Switch.Content>With photo</Switch.Content>
+        </Switch>
         <div className='w-1/4'>
           <Select
             defaultValue={filters.orderBy}
