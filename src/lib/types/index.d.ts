@@ -7,6 +7,16 @@ type UserFilters = {
   ageRange: number[];
   orderBy: string;
   gender: string[];
+} & PagingParams;
+
+type PagingParams = {
+  page?: number;
+  pageSize?: number;
+};
+
+type PaginatedResponse<T> = {
+  items: T[];
+  totalCount: number;
 };
 
 type MessageDto = {

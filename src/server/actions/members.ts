@@ -3,14 +3,14 @@
 import { requireAuthUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { profileEditSchema, ProfileEditSchema } from '@/lib/schemas/profileEditSchema';
-import { ActionResult, UserFilters } from '@/lib/types';
+import { ActionResult, PaginatedResponse, UserFilters } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { cache } from 'react';
 import { Member, Photo } from '../../../generated/prisma/client';
 import { cloudinary } from '@/lib/cloudinary';
 import { addYears } from 'date-fns';
 
-export async function getMembers(params: UserFilters) {
+export async function getMembers(params: UserFilters): Promise<PaginatedResponse<Member>> {
   const currentUser = await requireAuthUser();
 
   const ageRange = params.ageRange?.toString()?.split(',') || [18, 100];
@@ -18,18 +18,29 @@ export async function getMembers(params: UserFilters) {
   const minDob = addYears(currentDate, -ageRange[1] - 1);
   const maxDob = addYears(currentDate, -ageRange[0]);
   const orderBySelector = params?.orderBy || 'updated';
-  const selectedGender = params.gender?.toString()?.split(',') || ['male', 'female'];
+  const selectedGender = params?.gender?.toString()?.split(',') || ['male', 'female'];
+  const pageNumber = Number(params?.page) || 1;
+  const pageSize = Number(params?.pageSize) || 3;
+
+  const where = {
+    AND: [{ dateOfBirth: { gte: minDob, lte: maxDob } }, { gender: { in: selectedGender } }],
+    NOT: { userId: currentUser.id },
+  };
 
   try {
-    return prisma.member.findMany({
-      where: {
-        AND: [{ dateOfBirth: { gte: minDob, lte: maxDob } }, { gender: { in: selectedGender } }],
-        NOT: { userId: currentUser.id },
-      },
-      orderBy: { [orderBySelector]: 'desc' },
-    });
+    const [items, totalCount] = await Promise.all([
+      prisma.member.findMany({
+        where,
+        orderBy: { [orderBySelector]: 'desc' },
+        skip: (pageNumber - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.member.count({ where }),
+    ]);
+    return { items, totalCount };
   } catch (error) {
     console.log(error);
+    return { items: [], totalCount: 0 };
   }
 }
 
