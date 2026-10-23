@@ -12,7 +12,11 @@ const defaultFilters: UserFilters = {
   orderBy: 'updated',
 };
 
-export default function Filters() {
+type Props = {
+  totalCount: number;
+};
+
+export default function Filters({ totalCount }: Props) {
   const { searchParams, commit, isPending, restore } = useFilterParams();
 
   useEffect(() => {
@@ -39,16 +43,16 @@ export default function Filters() {
   ];
 
   const handleAgeSelect = (value: number[]) => {
-    commit({ ageRange: value.join(',') });
+    commit({ ageRange: value.join(','), page: null });
   };
 
   const handleOrderBy = (value: string) => {
-    commit({ orderBy: value });
+    commit({ orderBy: value, page: null });
   };
 
   const handleGenderToggle = (value: string) => {
     const next = filters.gender.includes(value) ? filters.gender.filter((g) => g !== value) : [...filters.gender, value];
-    commit({ gender: next.join(',') });
+    commit({ gender: next.join(','), page: null });
   };
 
   return (
@@ -56,7 +60,7 @@ export default function Filters() {
       <div className='flex flex-row justify-around items-center'>
         <div className='text-accent font-semibold text-xl flex gap-3 items-center'>
           <span>Results:</span>
-          {isPending ? <Spinner /> : 10}
+          {isPending ? <Spinner /> : totalCount}
         </div>
         <div className='flex gap-2 items-center'>
           <div>Gender:</div>

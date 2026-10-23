@@ -20,7 +20,7 @@ export async function getMembers(params: UserFilters): Promise<PaginatedResponse
   const orderBySelector = params?.orderBy || 'updated';
   const selectedGender = params?.gender?.toString()?.split(',') || ['male', 'female'];
   const pageNumber = Number(params?.page) || 1;
-  const pageSize = Number(params?.pageSize) || 3;
+  const pageSize = Number(params?.pageSize) || 12;
 
   const where = {
     AND: [{ dateOfBirth: { gte: minDob, lte: maxDob } }, { gender: { in: selectedGender } }],

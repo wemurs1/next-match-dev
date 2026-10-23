@@ -1,16 +1,18 @@
 'use client';
 
-import { Pagination } from '@heroui/react';
+import { Button, Pagination } from '@heroui/react';
 
 type Props = {
   page: number;
   itemsPerPage: number;
   totalItems: number;
   setPage: (page: number) => void;
+  setPageSize: (size: number) => void;
 };
 
-export function PaginationComponent({ page, itemsPerPage, totalItems, setPage }: Props) {
+export function PaginationComponent({ page, itemsPerPage, totalItems, setPage, setPageSize }: Props) {
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const pageSizes = [3, 6, 12];
 
   const getPageNumbers = () => {
     const pages: (number | 'ellipsis')[] = [];
@@ -78,6 +80,13 @@ export function PaginationComponent({ page, itemsPerPage, totalItems, setPage }:
           </Pagination.Next>
         </Pagination.Item>
       </Pagination.Content>
+      <div className='flex gap-2'>
+        {pageSizes.map((s) => (
+          <Button key={s} onClick={() => setPageSize(s)} variant={itemsPerPage === s ? 'primary' : 'secondary'}>
+            {s}
+          </Button>
+        ))}
+      </div>
     </Pagination>
   );
 }

@@ -11,7 +11,7 @@ export default function MembersPagination({ totalCount }: Props) {
   const { searchParams, commit } = useFilterParams();
 
   const page = Number(searchParams.get('page')) || 1;
-  const pageSize = Number(searchParams.get('pageSize')) || 3;
+  const pageSize = Number(searchParams.get('pageSize')) || 12;
 
   return (
     <PaginationComponent
@@ -19,6 +19,7 @@ export default function MembersPagination({ totalCount }: Props) {
       itemsPerPage={pageSize}
       totalItems={totalCount}
       setPage={(page) => commit({ page: String(page) })}
+      setPageSize={(size) => commit({ pageSize: String(size), page: null })}
     />
   );
 }

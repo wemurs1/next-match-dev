@@ -17,7 +17,7 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
         <EmptyState />
       ) : (
         <div className='flex flex-col flex-1 h-screen -mt-24'>
-          <Filters />
+          <Filters totalCount={totalCount}/>
           <div className='p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6'>
             {members && members.map((member) => <MemberCard key={member.id} member={member} likeIds={likeIds} />)}
           </div>
