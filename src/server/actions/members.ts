@@ -21,13 +21,13 @@ export async function getMembers(params: UserFilters): Promise<PaginatedResponse
   const selectedGender = params?.gender?.toString()?.split(',') || ['male', 'female'];
   const pageNumber = Number(params?.page) || 1;
   const pageSize = Number(params?.pageSize) || 12;
-  const withPhoto = String(params.withPhoto) === 'true';
+  const withPhoto = params.withPhoto === undefined ? true : String(params.withPhoto) === 'true';
 
   const where = {
     AND: [
       { dateOfBirth: { gte: minDob, lte: maxDob } },
       { gender: { in: selectedGender } },
-      ...(withPhoto === true ? [] : [{ image: { not: null } }]),
+      ...(withPhoto === true ? [{ image: { not: null } }] : []),
     ],
     NOT: { userId: currentUser.id },
   };
