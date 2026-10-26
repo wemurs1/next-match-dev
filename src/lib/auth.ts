@@ -1,19 +1,68 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { PrismaClient } from '../../generated/prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
 import { headers } from 'next/headers';
 import { nextCookies } from 'better-auth/next-js';
-
-const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
-});
+import { prisma } from './prisma';
+import { getEmailHtml, sendEmail } from './mail';
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: 'postgresql', // or "mysql", "postgresql", ...etc
+    provider: 'postgresql',
   }),
+  emailVerification: {
+    sendVerificationEmail: async ({ user, token }) => {
+      if (process.env.SEEDING === 'true') return;
+      const verificationUrl = `${process.env.BETTER_AUTH_URL}/verify-email?token=${token}&callbackURL=/members`;
+      void sendEmail({
+        to: user.email,
+        subject: 'Verify your email address',
+        text: `Click the link to verify your email: ${verificationUrl}`,
+        html: getEmailHtml({
+          heading: 'Verify your email address',
+          body: 'Click the button to verify your email and complete registration',
+          buttonText: 'Verify enail',
+          buttonUrl: verificationUrl,
+        }),
+      });
+    },
+    sendOnSignIn: true,
+    autoSignInAfterVerification: true,
+  },
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user, context) => {
+          const body = context?.body as
+            | {
+                gender: string;
+                dateOfBirth: string;
+                description: string;
+                city: string;
+                country: string;
+              }
+            | undefined;
+
+          const { gender, dateOfBirth, description, city, country } = body ?? {};
+
+          if (gender && dateOfBirth && description && city && country) {
+            await prisma.member.create({
+              data: {
+                userId: user.id,
+                name: user.name,
+                gender,
+                dateOfBirth: new Date(dateOfBirth),
+                description,
+                city,
+                country,
+              },
+            });
+          }
+        },
+      },
+    },
   },
   plugins: [nextCookies()],
 });

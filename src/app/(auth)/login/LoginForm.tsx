@@ -30,7 +30,11 @@ export default function LoginForm() {
           router.refresh();
         },
         onError: (ctx) => {
-          toast.danger(ctx.error.message);
+          if (ctx.error.status === 403) {
+            toast.danger('You need to verify your email. Please check your email for link');
+          } else {
+            toast.danger(ctx.error.message);
+          }
         },
       },
     );

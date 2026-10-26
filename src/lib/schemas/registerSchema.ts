@@ -1,15 +1,15 @@
 import { z } from 'zod';
+import { calculateAge } from '../util';
+
+const requiredString = (fieldname: string, min = 1) =>
+  z.string({ error: `${fieldname} is required` }).min(min, { error: `${fieldname} is required` });
 
 export const registerSchema = z
   .object({
-    name: z.string().min(1, {
-      error: 'The name is required',
-    }),
-    email: z.email(),
-    password: z.string().min(6, {
-      error: 'Password must be at least 6 characters',
-    }),
-    confirmPassword: z.string(),
+    name: requiredString('name'),
+    email: z.email({ error: 'email is required' }),
+    password: requiredString('password', 6),
+    confirmPassword: requiredString('confirmPassword', 6),
   })
   .superRefine(({ confirmPassword, password }, ctx) => {
     if (confirmPassword !== password) {
@@ -21,4 +21,23 @@ export const registerSchema = z
     }
   });
 
+export const profileSchema = z.object(
+  {
+    gender: requiredString('gender'),
+    description: requiredString('description', 10),
+    city: requiredString('city'),
+    country: requiredString('country'),
+    dateOfBirth: requiredString('dateOfBirth').refine((dateString) => {
+      const age = calculateAge(dateString);
+      return age >= 18;
+    }),
+  },
+  { error: 'You must be at least 18 years old to use this app' },
+);
+
+export const combinedRegisterSchema = registerSchema.and(profileSchema);
+
+export type ProfileSchema = z.infer<typeof profileSchema>;
 export type RegisterSchema = z.infer<typeof registerSchema>;
+
+export type CombinedRegisterSchema = z.infer<typeof combinedRegisterSchema>;
