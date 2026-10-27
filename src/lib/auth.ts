@@ -30,6 +30,20 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, token }) => {
+      const resetUrl = `${process.env.BETTER_AUTH_URL}/reset-password?token=${token}`;
+      void sendEmail({
+        to: user.email,
+        subject: 'Reset your password',
+        text: `Click the link to reset your password: ${resetUrl}`,
+        html: getEmailHtml({
+          heading: 'Reset your password',
+          body: 'Click the button to reset your password. Link will expire in 1 hour',
+          buttonText: 'Reset password',
+          buttonUrl: resetUrl,
+        }),
+      });
+    },
   },
   databaseHooks: {
     user: {

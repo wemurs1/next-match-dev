@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginSchema, loginSchema } from '@/lib/schemas/loginSchema';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
+import Link from 'next/link';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -63,6 +64,9 @@ export default function LoginForm() {
         <Button isPending={isSubmitting} type='submit' className='w-full'>
           Sign in
         </Button>
+        <Link href='/forgot-password' className='text-sm text-accent text-center hover:underline'>
+          Forgot password?
+        </Link>
       </form>
     </Card>
   );
