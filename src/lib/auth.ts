@@ -8,6 +8,14 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
+  user: {
+    additionalFields: {
+      profileComplete: {
+        type: 'boolean',
+        defaultValue: false
+      },
+    },
+  },
   emailVerification: {
     sendVerificationEmail: async ({ user, token }) => {
       if (process.env.SEEDING === 'true') return;
@@ -43,6 +51,12 @@ export const auth = betterAuth({
           buttonUrl: resetUrl,
         }),
       });
+    },
+  },
+  socialProviders: {
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
   databaseHooks: {

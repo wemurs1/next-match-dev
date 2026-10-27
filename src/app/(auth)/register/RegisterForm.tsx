@@ -32,7 +32,7 @@ export default function RegisterForm() {
   const onSubmit = async () => {
     const userData = userForm.getValues();
     const profileData = profileForm.getValues();
-    const data = { ...userData, ...profileData };
+    const data = { ...userData, ...profileData, profileComplete: true };
 
     await authClient.signUp.email(data, {
       onSuccess: () => {

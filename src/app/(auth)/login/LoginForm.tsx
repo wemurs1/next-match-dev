@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, CardHeader, FieldError, Input, TextField, toast } from '@heroui/react';
+import { Button, Card, CardHeader, FieldError, Input, Separator, TextField, toast } from '@heroui/react';
 import { GiPadlock } from 'react-icons/gi';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +8,7 @@ import { LoginSchema, loginSchema } from '@/lib/schemas/loginSchema';
 import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import Link from 'next/link';
+import SocialLogin from './SocialLogin';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -67,6 +68,8 @@ export default function LoginForm() {
         <Link href='/forgot-password' className='text-sm text-accent text-center hover:underline'>
           Forgot password?
         </Link>
+        <Separator />
+        <SocialLogin />
       </form>
     </Card>
   );
