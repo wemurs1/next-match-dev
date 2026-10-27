@@ -49,7 +49,7 @@ async function seedUsers() {
             country: member.country,
             image: member.image,
             photos: {
-              create: [{ url: member.image }],
+              create: [{ url: member.image, status: 'approved' }],
             },
           },
         },

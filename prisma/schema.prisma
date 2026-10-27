@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -104,6 +103,7 @@ model Photo {
   id       String  @id @default(cuid())
   url      String
   publicId String?
+  status   String  @default("pending")
 
   memberId String
   member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
