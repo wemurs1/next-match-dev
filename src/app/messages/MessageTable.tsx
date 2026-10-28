@@ -1,7 +1,7 @@
 'use client';
 
 import { AiFillDelete } from 'react-icons/ai';
-import { Button, Table, toast } from '@heroui/react';
+import { Button, Table, toast, useOverlayState } from '@heroui/react';
 import { deleteMessage, getMessagesByContainer } from '@/server/actions/messages';
 import { MessageDto } from '@/lib/types';
 import { useMessageStore } from '@/lib/hooks/useMessageStore';
@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/shallow';
 import PresenceAvatar from '@/components/PresenceAvatar';
 import { formatShortDateTime } from '@/lib/util';
+import AppModal from '@/components/AppModal';
 
 type Props = {
   initialMessages: MessageDto[];
@@ -25,6 +26,8 @@ export default function MessageTable({ initialMessages, container, initNextCurso
   const partyLabel = isOutbox ? 'Recipient' : 'Sender';
   const initMessages = useRef(initialMessages);
   const [cursor, setCursor] = useState(initNextCursor);
+  const [selectedMessage, setSelectedMessage] = useState<MessageDto | null>(null);
+  const deleteState = useOverlayState();
 
   const { set, remove, messages, updateUnreadCount, resetMessages } = useMessageStore(
     useShallow((state) => ({
@@ -64,62 +67,90 @@ export default function MessageTable({ initialMessages, container, initNextCurso
     });
   };
 
+  const openConfirmModal = (message: MessageDto) => {
+    setSelectedMessage(message);
+    deleteState.open();
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedMessage) handleDelete(selectedMessage);
+    deleteState.close();
+  };
+
   return (
-    <Table>
-      <Table.ScrollContainer className='max-h-[60vh] overflow-y-auto'>
-        <Table.Content aria-label='Messages table'>
-          <Table.Header>
-            <Table.Column id='party' isRowHeader>
-              {partyLabel}
-            </Table.Column>
-            <Table.Column id='text'>Message</Table.Column>
-            <Table.Column id='created'>Date</Table.Column>
-            <Table.Column id='actions'>{''}</Table.Column>
-          </Table.Header>
-          <Table.Body items={messages} renderEmptyState={() => 'No messages to display'}>
-            {(message) => {
-              const name = isOutbox ? message.recipientName : message.senderName;
-              const image = isOutbox ? message.recipientImage : message.senderImage;
-              const partyId = isOutbox ? message.recipientId : message.senderId;
-              const isRead = message.dateRead !== null;
-              return (
-                <Table.Row
-                  id={message.id}
-                  onAction={() => router.push(`/members/${partyId}/chat`)}
-                  className={`${!isRead && !isOutbox ? 'font-semibold' : ''} cursor-pointer`}>
-                  <Table.Cell>
-                    <div className='flex items-center gap-3'>
-                      <PresenceAvatar userId={partyId} src={image} />
-                      <span>{name}</span>
-                    </div>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <span className='line-clamp-1'>{message.text}</span>
-                  </Table.Cell>
-                  <Table.Cell>{formatShortDateTime(new Date(message.created))}</Table.Cell>
-                  <Table.Cell>
-                    <div onPointerDown={(e) => e.stopPropagation()}>
-                      <Button
-                        isPending={isDeleting}
-                        onClick={() => handleDelete(message)}
-                        isIconOnly
-                        variant='danger-soft'
-                        aria-label='Delete message'>
-                        <AiFillDelete size={18} />
-                      </Button>
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              );
-            }}
-          </Table.Body>
-        </Table.Content>
-      </Table.ScrollContainer>
-      <Table.Footer className='justify-end'>
-        <Button variant='primary' isPending={isLoadingMore} isDisabled={!hasMore} onClick={loadMore}>
-          {hasMore ? 'Load more' : 'No more messages'}
-        </Button>
-      </Table.Footer>
-    </Table>
+    <>
+      <Table>
+        <Table.ScrollContainer className='max-h-[60vh] overflow-y-auto'>
+          <Table.Content aria-label='Messages table'>
+            <Table.Header>
+              <Table.Column id='party' isRowHeader>
+                {partyLabel}
+              </Table.Column>
+              <Table.Column id='text'>Message</Table.Column>
+              <Table.Column id='created'>Date</Table.Column>
+              <Table.Column id='actions'>{''}</Table.Column>
+            </Table.Header>
+            <Table.Body items={messages} renderEmptyState={() => 'No messages to display'}>
+              {(message) => {
+                const name = isOutbox ? message.recipientName : message.senderName;
+                const image = isOutbox ? message.recipientImage : message.senderImage;
+                const partyId = isOutbox ? message.recipientId : message.senderId;
+                const isRead = message.dateRead !== null;
+                return (
+                  <Table.Row
+                    id={message.id}
+                    onAction={() => router.push(`/members/${partyId}/chat`)}
+                    className={`${!isRead && !isOutbox ? 'font-semibold' : ''} cursor-pointer`}>
+                    <Table.Cell>
+                      <div className='flex items-center gap-3'>
+                        <PresenceAvatar userId={partyId} src={image} />
+                        <span>{name}</span>
+                      </div>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <span className='line-clamp-1'>{message.text}</span>
+                    </Table.Cell>
+                    <Table.Cell>{formatShortDateTime(new Date(message.created))}</Table.Cell>
+                    <Table.Cell>
+                      <div onPointerDown={(e) => e.stopPropagation()}>
+                        <Button
+                          isPending={isDeleting}
+                          onClick={() => openConfirmModal(message)}
+                          isIconOnly
+                          variant='danger-soft'
+                          aria-label='Delete message'>
+                          <AiFillDelete size={18} />
+                        </Button>
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              }}
+            </Table.Body>
+          </Table.Content>
+        </Table.ScrollContainer>
+        <Table.Footer className='justify-end'>
+          <Button variant='primary' isPending={isLoadingMore} isDisabled={!hasMore} onClick={loadMore}>
+            {hasMore ? 'Load more' : 'No more messages'}
+          </Button>
+        </Table.Footer>
+      </Table>
+
+      <AppModal
+        state={deleteState}
+        title='Delete message'
+        footer={
+          <>
+            <Button variant='ghost' onClick={deleteState.close}>
+              Cancel
+            </Button>
+            <Button variant='danger-soft' onClick={handleConfirmDelete} isPending={isDeleting}>
+              Delete
+            </Button>
+          </>
+        }>
+        Are you sure you want to delete this message? This cannot be undone.
+      </AppModal>
+    </>
   );
 }
