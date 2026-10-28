@@ -22,9 +22,9 @@ if (!global.pusherServerInstance) {
     key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY!,
     secret: process.env.PUSHER_SECRET!,
     useTLS: false,
-    host: process.env.PUSHER_HOST || 'localhost',
+    host: process.env.PUSHER_HOST!,
     port: process.env.PUSHER_PORT || '6001',
-  })
+  });
 }
 
 export const pusherServer = global.pusherServerInstance;

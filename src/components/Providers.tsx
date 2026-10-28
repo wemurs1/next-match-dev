@@ -5,7 +5,12 @@ import { useMessageStore } from '@/lib/hooks/useMessageStore';
 import { useNotifications } from '@/lib/hooks/useNotifications';
 import { usePresence } from '@/lib/hooks/usePresence';
 import { getUnreadMessageCount } from '@/server/actions/messages';
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, Suspense, useEffect, useRef } from 'react';
+
+function NotificationsConsumer({ userId }: { userId: string | null }) {
+  useNotifications(userId);
+  return null;
+}
 
 export default function Providers({ children }: { children: ReactNode }) {
   const session = authClient.useSession();
@@ -23,7 +28,10 @@ export default function Providers({ children }: { children: ReactNode }) {
   }, [updateUnreadCount, userId]);
 
   usePresence(userId);
-  useNotifications(userId);
 
-  return <>{children}</>;
+  return <>
+  <Suspense>
+    <NotificationsConsumer userId={userId}/>
+  </Suspense>
+  {children}</>;
 }
