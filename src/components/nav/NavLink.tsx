@@ -15,10 +15,11 @@ export default function NavLink({ href, label }: Props) {
   const unreadCount = useMessageStore((state) => state.unreadCount);
 
   const isMessages = href === '/messages';
+  const linkPath = href.split('?')[0]
 
   return (
     <Badge.Anchor className={isMessages ? 'pr-5' : ''}>
-      <Link href={href} className={pathname === href ? 'text-yellow-400' : 'hover:text-yellow-400/80'}>
+      <Link href={href} className={pathname === linkPath  ? 'text-yellow-400' : 'hover:text-yellow-400/80'}>
         {label}
       </Link>
       {isMessages && unreadCount > 0 && <Badge color='accent' size='md'>{unreadCount}</Badge>}
